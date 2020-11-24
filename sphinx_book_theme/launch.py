@@ -94,9 +94,15 @@ def add_hub_urls(
     jupyterhub_url = launch_buttons.get("jupyterhub_url")
     binderhub_url = launch_buttons.get("binderhub_url")
     colab_url = launch_buttons.get("colab_url")
-    if binderhub_url:
+    if binderhub_url and org and repo:
         url = (
             f"{binderhub_url}/v2/gh/{org}/{repo}/{branch}?"
+            f"urlpath={ui_pre}/{path_rel_repo}"
+        )
+        context["binder_url"] = url
+    elif binderhub_url:
+        url = (
+            f"{binderhub_url}/v2/git/{repo_url}/{branch}?"
             f"urlpath={ui_pre}/{path_rel_repo}"
         )
         context["binder_url"] = url
@@ -119,12 +125,13 @@ def add_hub_urls(
 
 def _split_repo_url(url):
     """Split a repository URL into an org / repo combination."""
-    if "github.com/" in url:
-        end = url.split("github.com/")[-1]
-        org, repo = end.split("/")[:2]
-    else:
+    try:
+    #if "github.com/" in url:
+        #end = url.split("github.com/")[-1]
+        org, repo = url.split("/")[:2]
+    except:
         SPHINX_LOGGER.warning(
-            f"Currently Binder/JupyterHub repositories must be on GitHub, got {url}"
+            f"Could not identify org and repo from url {url}"
         )
         org = repo = None
     return org, repo
